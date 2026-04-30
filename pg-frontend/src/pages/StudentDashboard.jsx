@@ -22,41 +22,69 @@ export default function StudentDashboard() {
   };
 
   return (
-    <div className="p-10">
-      
-      {/* TOP BUTTONS */}
-      <div className="mb-6">
-        <button
-          onClick={() => (window.location.href = "/rent")}
-          className="bg-gray-800 text-white px-3 py-1 mr-2"
-        >
-          My Rent
-        </button>
+    <div className="relative min-h-screen overflow-hidden bg-slate-900">
+      <img
+        src="https://source.unsplash.com/1600x900/?students,hostel"
+        alt="Student hostel background"
+        className="absolute inset-0 h-full w-full object-cover opacity-60"
+      />
+      <div className="absolute inset-0 bg-slate-950/70" />
+      <div className="relative z-10 min-h-screen p-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 text-center">
+            <p className="text-sm uppercase tracking-[0.35em] text-slate-200 opacity-80">
+              Student Dashboard
+            </p>
+            <h1 className="mt-4 text-4xl font-semibold text-white">
+              Find Your Perfect Room
+            </h1>
+            <p className="mt-2 text-lg text-slate-300">
+              Browse available rooms, pay rent, and submit complaints easily.
+            </p>
+          </div>
 
-        <button
-          onClick={() => (window.location.href = "/complaint")}
-          className="bg-red-600 text-white px-3 py-1"
-        >
-          Complaint
-        </button>
-      </div>
+          {/* TOP BUTTONS */}
+          <div className="mb-8 flex justify-center gap-4">
+            <button
+              onClick={() => (window.location.href = "/rent")}
+              className="rounded-2xl bg-slate-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+            >
+              💰 My Rent
+            </button>
+            <button
+              onClick={() => (window.location.href = "/complaint")}
+              className="rounded-2xl bg-red-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-red-700"
+            >
+              📝 Complaint
+            </button>
+          </div>
 
-      <h1 className="text-3xl mb-6">Available Rooms</h1>
-
-      {rooms.map((r) => (
-        <div key={r._id} className="border p-4 mb-3 w-96">
-          <p>Room: {r.roomNumber}</p>
-          <p>Rent: ₹{r.rentPerBed}</p>
-          <p>Beds left: {r.totalBeds - r.occupiedBeds}</p>
-
-          <button
-            onClick={() => book(r._id)}
-            className="bg-green-600 text-white px-3 py-1 mt-2"
-          >
-            Book Bed
-          </button>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {rooms.map((r) => (
+              <div key={r._id} className="group rounded-[32px] border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition hover:bg-white/15 hover:shadow-3xl">
+                <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/20 text-2xl">
+                  🏠
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-4">Room {r.roomNumber}</h3>
+                <div className="space-y-2 mb-4">
+                  <p className="text-slate-300">
+                    <span className="font-medium">Rent:</span> ₹{r.rentPerBed}/month
+                  </p>
+                  <p className="text-slate-300">
+                    <span className="font-medium">Beds left:</span> {r.totalBeds - r.occupiedBeds}
+                  </p>
+                </div>
+                <button
+                  onClick={() => book(r._id)}
+                  className="w-full rounded-2xl bg-green-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                  Book Bed
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
-      ))}
+      </div>
     </div>
   );
 }

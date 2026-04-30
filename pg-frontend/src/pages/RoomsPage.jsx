@@ -56,91 +56,143 @@ export default function RoomsPage() {
   }
 
   return (
-    <div className="p-10">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Rooms Management</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setShowForm(!showForm)}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-          >
-            {showForm ? "Cancel" : "+ Add Room"}
-          </button>
-          <button
-            onClick={() => navigate("/owner")}
-            className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-          >
-            ← Back to Dashboard
-          </button>
-        </div>
-      </div>
-
-      {showForm && (
-        <form onSubmit={handleAddRoom} className="border p-6 rounded-lg mb-6 bg-gray-50">
-          <h2 className="text-2xl font-bold mb-4">Add New Room</h2>
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <input
-              type="text"
-              name="roomNumber"
-              placeholder="Room Number"
-              value={formData.roomNumber}
-              onChange={handleInputChange}
-              required
-              className="border p-2 rounded"
-            />
-            <input
-              type="number"
-              name="totalBeds"
-              placeholder="Total Beds"
-              value={formData.totalBeds}
-              onChange={handleInputChange}
-              required
-              className="border p-2 rounded"
-            />
-            <input
-              type="number"
-              name="rentPerBed"
-              placeholder="Rent per month"
-              value={formData.rentPerBed}
-              onChange={handleInputChange}
-              required
-              className="border p-2 rounded"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700"
-          >
-            Add Room
-          </button>
-        </form>
-      )}
-
-      {loading ? (
-        <div className="text-gray-500 text-lg">Loading rooms...</div>
-      ) : rooms.length === 0 ? (
-        <p className="text-gray-500 text-lg">No rooms found</p>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rooms.map((room) => (
-            <div key={room._id} className="border p-6 rounded-lg shadow-md hover:shadow-lg">
-              <h3 className="text-xl font-semibold mb-2">Room {room.roomNumber}</h3>
-              <p className="text-gray-600 mb-2">
-                <strong>Total Beds:</strong> {room.totalBeds}
+    <div className="relative min-h-screen overflow-hidden bg-slate-900">
+      <img
+        src="https://source.unsplash.com/1600x900/?hostel,rooms"
+        alt="Hostel rooms background"
+        className="absolute inset-0 h-full w-full object-cover opacity-60"
+      />
+      <div className="absolute inset-0 bg-slate-950/70" />
+      <div className="relative z-10 min-h-screen p-8">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-8 flex items-center justify-between">
+            <div>
+              <p className="text-sm uppercase tracking-[0.35em] text-slate-200 opacity-80">
+                Rooms Management
               </p>
-              <p className="text-gray-600 mb-2">
-                <strong>Occupied:</strong> {room.occupiedBeds || 0} beds
-              </p>
-              <p className="text-gray-600 mb-2">
-                <strong>Rent:</strong> ₹{room.rentPerBed}/month
-              </p>
-              <p className={`font-semibold ${(room.occupiedBeds || 0) >= room.totalBeds ? "text-red-600" : "text-green-600"}`}>
-                {(room.occupiedBeds || 0) >= room.totalBeds ? "Full" : "Available"}
+              <h1 className="mt-4 text-4xl font-semibold text-white">
+                Manage Your PG Rooms
+              </h1>
+              <p className="mt-2 text-lg text-slate-300">
+                Add, view, and track room availability and occupancy.
               </p>
             </div>
-          ))}
+            <div className="flex gap-4">
+              <button
+                onClick={() => setShowForm(!showForm)}
+                className="rounded-2xl bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                {showForm ? "Cancel" : "+ Add Room"}
+              </button>
+              <button
+                onClick={() => navigate("/owner")}
+                className="rounded-2xl bg-slate-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-700"
+              >
+                ← Back to Dashboard
+              </button>
+            </div>
+          </div>
+
+          {showForm && (
+            <div className="mb-8 rounded-[32px] border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl">
+              <h2 className="text-2xl font-semibold text-white mb-6">Add New Room</h2>
+              <form onSubmit={handleAddRoom} className="space-y-6">
+                <div className="grid gap-6 md:grid-cols-3">
+                  <div className="rounded-3xl border border-white/30 bg-white/20 p-4">
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-200/80">
+                      Room Number
+                    </label>
+                    <input
+                      type="text"
+                      name="roomNumber"
+                      placeholder="e.g., 101"
+                      value={formData.roomNumber}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-slate-950 outline-none ring-1 ring-transparent transition focus:border-blue-300 focus:bg-white/80 focus:ring-2 focus:ring-blue-200/70"
+                    />
+                  </div>
+                  <div className="rounded-3xl border border-white/30 bg-white/20 p-4">
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-200/80">
+                      Total Beds
+                    </label>
+                    <input
+                      type="number"
+                      name="totalBeds"
+                      placeholder="e.g., 4"
+                      value={formData.totalBeds}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-slate-950 outline-none ring-1 ring-transparent transition focus:border-blue-300 focus:bg-white/80 focus:ring-2 focus:ring-blue-200/70"
+                    />
+                  </div>
+                  <div className="rounded-3xl border border-white/30 bg-white/20 p-4">
+                    <label className="mb-2 block text-xs font-medium uppercase tracking-[0.16em] text-slate-200/80">
+                      Rent per Bed
+                    </label>
+                    <input
+                      type="number"
+                      name="rentPerBed"
+                      placeholder="e.g., 5000"
+                      value={formData.rentPerBed}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full rounded-2xl border border-white/30 bg-white/10 px-4 py-3 text-slate-950 outline-none ring-1 ring-transparent transition focus:border-blue-300 focus:bg-white/80 focus:ring-2 focus:ring-blue-200/70"
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  className="rounded-2xl bg-green-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-green-700"
+                >
+                  Add Room
+                </button>
+              </form>
+            </div>
+          )}
+
+          {loading ? (
+            <div className="text-center">
+              <p className="text-slate-300 text-lg">Loading rooms...</p>
+            </div>
+          ) : rooms.length === 0 ? (
+            <div className="text-center">
+              <p className="text-slate-300 text-lg">No rooms found</p>
+            </div>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {rooms.map((room) => (
+                <div key={room._id} className="group rounded-[32px] border border-white/20 bg-white/10 p-6 shadow-2xl backdrop-blur-xl transition hover:bg-white/15 hover:shadow-3xl">
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-500/20 text-2xl">
+                    🏠
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-4">Room {room.roomNumber}</h3>
+                  <div className="space-y-2 mb-4">
+                    <p className="text-slate-300">
+                      <span className="font-medium">Total Beds:</span> {room.totalBeds}
+                    </p>
+                    <p className="text-slate-300">
+                      <span className="font-medium">Occupied:</span> {room.occupiedBeds || 0} beds
+                    </p>
+                    <p className="text-slate-300">
+                      <span className="font-medium">Rent:</span> ₹{room.rentPerBed}/month
+                    </p>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                      (room.occupiedBeds || 0) >= room.totalBeds
+                        ? "bg-red-500/20 text-red-300"
+                        : "bg-green-500/20 text-green-300"
+                    }`}>
+                      {(room.occupiedBeds || 0) >= room.totalBeds ? "Full" : "Available"}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
