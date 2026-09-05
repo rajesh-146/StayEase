@@ -23,9 +23,7 @@ exports.getOwnerAnalytics = async (req, res) => {
       room: { $in: roomIds },
     }).lean();
 
-    // =========================
     // ROOM ANALYTICS
-    // =========================
 
     const totalRooms = rooms.length;
 
@@ -46,9 +44,7 @@ exports.getOwnerAnalytics = async (req, res) => {
         ? Math.round((occupiedBeds / totalBeds) * 100)
         : 0;
 
-    // =========================
     // STUDENT ANALYTICS
-    // =========================
 
     const studentIds = [
       ...new Set(
@@ -60,9 +56,7 @@ exports.getOwnerAnalytics = async (req, res) => {
 
     const totalStudents = studentIds.length;
 
-    // =========================
     // RENT ANALYTICS
-    // =========================
 
     const paidRents = rents.filter(
       (rent) => rent.status === "paid"

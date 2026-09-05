@@ -161,6 +161,10 @@ exports.verifyRentPayment = async (req, res) => {
       razorpay_signature
     } = req.body;
 
+    // ========================================================
+    // 1. Validate request data
+    // ========================================================
+
     if (
       !rentId ||
       !razorpay_order_id ||
@@ -168,29 +172,50 @@ exports.verifyRentPayment = async (req, res) => {
       !razorpay_signature
     ) {
       return res.status(400).json({
+        success: false,
         message: "Payment verification details are missing"
       });
     }
+
+    // ========================================================
+    // 2. Find rent
+    // ========================================================
 
     const rent = await Rent.findById(rentId);
 
     if (!rent) {
       return res.status(404).json({
+        success: false,
         message: "Rent record not found"
       });
     }
 
-    // Security check
-    if (
-      rent.student.toString() !==
-      req.user._id.toString()
-    ) {
+    // ========================================================
+    // 3. Make sure this rent belongs to logged-in student
+    // ========================================================
+
+    if (rent.student.toString() !== req.user._id.toString()) {
       return res.status(403).json({
+        success: false,
         message: "Access denied"
       });
     }
 
-    // Create server-side signature
+    // ========================================================
+    // 4. Prevent paying an already-paid rent
+    // ========================================================
+
+    if (rent.status === "paid") {
+      return res.status(400).json({
+        success: false,
+        message: "Rent is already paid"
+      });
+    }
+
+    // ========================================================
+    // 5. Verify Razorpay signature
+    // ========================================================
+
     const generatedSignature = crypto
       .createHmac(
         "sha256",
@@ -201,8 +226,12 @@ exports.verifyRentPayment = async (req, res) => {
       )
       .digest("hex");
 
-    // Compare signatures
-    if (generatedSignature !== razorpay_signature) {
+    const signaturesMatch = crypto.timingSafeEqual(
+      Buffer.from(generatedSignature),
+      Buffer.from(razorpay_signature)
+    );
+
+    if (!signaturesMatch) {
       console.error("Invalid Razorpay signature");
 
       return res.status(400).json({
@@ -211,7 +240,113 @@ exports.verifyRentPayment = async (req, res) => {
       });
     }
 
-    // Payment verified successfully
+    // ========================================================
+    // 6. Fetch order directly from Razorpay
+    // ========================================================
+
+    const order = await razorpay.orders.fetch(
+      razorpay_order_id
+    );
+
+    if (!order) {
+      return res.status(400).json({
+        success: false,
+        message: "Razorpay order not found"
+      });
+    }
+
+    // ========================================================
+    // 7. Make sure Razorpay order belongs to this rent
+    // ========================================================
+
+    if (
+      order.receipt !== `rent_${rent._id.toString()}`
+    ) {
+      console.error(
+        "Razorpay order does not belong to this rent"
+      );
+
+      return res.status(400).json({
+        success: false,
+        message: "Payment order does not match this rent"
+      });
+    }
+
+    // ========================================================
+    // 8. Verify amount and currency
+    // ========================================================
+
+    const expectedAmount = Math.round(rent.amount * 100);
+
+    if (
+      order.amount !== expectedAmount ||
+      order.currency !== "INR"
+    ) {
+      console.error(
+        "Payment amount/currency mismatch"
+      );
+
+      return res.status(400).json({
+        success: false,
+        message: "Payment amount does not match rent amount"
+      });
+    }
+
+    // ========================================================
+    // 9. Make sure payment belongs to this Razorpay order
+    // ========================================================
+
+    const payment = await razorpay.payments.fetch(
+      razorpay_payment_id
+    );
+
+    if (!payment) {
+      return res.status(400).json({
+        success: false,
+        message: "Razorpay payment not found"
+      });
+    }
+
+    if (payment.order_id !== razorpay_order_id) {
+      console.error(
+        "Payment does not belong to Razorpay order"
+      );
+
+      return res.status(400).json({
+        success: false,
+        message: "Payment does not match the order"
+      });
+    }
+
+    // ========================================================
+    // 10. Verify payment amount
+    // ========================================================
+
+    if (
+      payment.amount !== expectedAmount ||
+      payment.currency !== "INR"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Payment amount verification failed"
+      });
+    }
+
+    // ========================================================
+    // 11. Payment must be captured
+    // ========================================================
+
+    if (payment.status !== "captured") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment has not been captured"
+      });
+    }
+
+    // ========================================================
+    // 12. Everything verified → mark rent as paid
+    // ========================================================
+
     rent.status = "paid";
 
     await rent.save();
@@ -219,6 +354,10 @@ exports.verifyRentPayment = async (req, res) => {
     console.log(
       `Rent ${rent._id} marked as paid`
     );
+
+    // ========================================================
+    // 13. Send success response
+    // ========================================================
 
     res.json({
       success: true,
@@ -234,6 +373,7 @@ exports.verifyRentPayment = async (req, res) => {
     );
 
     res.status(500).json({
+      success: false,
       message: "Payment verification failed"
     });
   }
@@ -243,44 +383,6 @@ exports.verifyRentPayment = async (req, res) => {
 // ============================================================
 // OLD DIRECT PAYMENT
 // ============================================================
-
-exports.payRent = async (req, res) => {
-  try {
-    const { rentId } = req.body;
-
-    const rent = await Rent.findById(rentId);
-
-    if (!rent) {
-      return res.status(404).json({
-        message: "Rent record not found"
-      });
-    }
-
-    if (
-      rent.student.toString() !==
-      req.user._id.toString()
-    ) {
-      return res.status(403).json({
-        message: "Access denied"
-      });
-    }
-
-    rent.status = "paid";
-
-    await rent.save();
-
-    res.json({
-      message: "Rent paid successfully"
-    });
-
-  } catch (err) {
-    console.error("Direct payment error:", err.message);
-
-    res.status(500).json({
-      message: "Payment failed"
-    });
-  }
-};
 
 
 // ============================================================
