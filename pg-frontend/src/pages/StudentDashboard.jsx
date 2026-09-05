@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/api";
+import AIChat from "../components/AIChat";
 
 export default function StudentDashboard() {
   const [rooms, setRooms] = useState([]);
@@ -85,6 +86,7 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+     <AIChat />
     </div>
   );
 }

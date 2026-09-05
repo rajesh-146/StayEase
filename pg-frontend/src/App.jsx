@@ -9,6 +9,7 @@ import OwnerComplaints from "./pages/OwnerComplaints";
 import RoomsPage from "./pages/RoomsPage";
 import StudentsPage from "./pages/StudentsPage";
 import OwnerRentPage from "./pages/OwnerRentPage";
+import OwnerAnalytics from "./pages/OwnerAnalytics";
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
         <Route path="/owner-complaints" element={<OwnerComplaints />} />
         <Route path="/rooms" element={<RoomsPage />} />
         <Route path="/students" element={<StudentsPage />} />
+        <Route path="/owner-analytics" element={<OwnerAnalytics />} />
       </Routes>
     </BrowserRouter>
   );
